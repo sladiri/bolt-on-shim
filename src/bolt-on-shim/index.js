@@ -6,7 +6,7 @@ import { get, set } from "./shim.js";
  * must employ last-writer-wins semantics.
  */
 export default (nodeId, local = createStore(), ecds = createStore()) => {
-  return Object.seal(
+  return Object.freeze(
     Object.assign(Object.create(null), {
       get: async (key) => {
         try {
