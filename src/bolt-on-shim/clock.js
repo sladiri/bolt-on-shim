@@ -37,13 +37,56 @@ export const isValidClock = (clock) => {
   );
 };
 
-export const happensBefore = (writeRef, write) => {
+export const isEqual = (clockRef, clock) => {
   assert.isOk(
-    isValidWrite(writeRef),
+    isValidClock(clockRef),
+    "isEqual got invalid reference-dependency",
+  );
+  assert.isOk(isValidClock(clock), "isEqual got invalid dependency");
+  const refKeys = Object.keys(clockRef);
+  const writeKeys = Object.keys(clock);
+  if (refKeys.length !== writeKeys.length) {
+    return false;
+  }
+  return writeKeys.reduce(
+    (acc, val) => acc && clockRef[val] === clock[val],
+    true,
+  );
+};
+
+export const isConcurrent = (clockRef, clock) => {
+  assert.isOk(
+    isValidClock(clockRef),
+    "isConcurrent got invalid reference-dependency",
+  );
+  assert.isOk(isValidClock(clock), "isConcurrent got invalid dependency");
+  const refKeys = Object.keys(clockRef);
+  const writeKeys = Object.keys(clock);
+  if (writeKeys.some((key) => !refKeys.includes(key))) {
+    return true;
+  }
+  return false;
+};
+
+export const happensBefore = (clockRef, clock) => {
+  assert.isOk(
+    isValidClock(clockRef),
     "happensBefore got invalid reference-dependency",
   );
-  assert.isOk(isValidWrite(write), "happensBefore got invalid dependency");
-  return false;
+  assert.isOk(isValidClock(clock), "happensBefore got invalid dependency");
+  if (isConcurrent(clockRef, clock)) {
+    return false;
+  }
+  if (isEqual(clockRef, clock)) {
+    return false;
+  }
+  const refKeys = Object.keys(clockRef);
+  const writeKeys = Object.keys(clock);
+  if (writeKeys.some((key) => clockRef[key] < clock[key])) {
+    // TODO: <= or < ?
+    return false;
+  }
+  return true;
 };
 
 export const incrementClock = (nodeId, clock) => {
@@ -54,18 +97,30 @@ export const incrementClock = (nodeId, clock) => {
     Number.isSafeInteger(nextTick),
     "incrementClock wraps around tick",
   );
-  return Object.freeze(
-    Object.assign(Object.create(null), clock, { [nodeId]: nextTick }),
-  );
+  return { ...clock, [nodeId]: nextTick };
 };
 
-export const createClock = (nodeId, startTick = Number.MAX_SAFE_INTEGER) => {
+// export const mergeClocks = (clockA, clockB) => {
+//   const overlappingKeys = Object.keys(clockA).filter((key) =>
+//     Object.keys(clockB).includes(key),
+//   );
+//   const overlap = overlappingKeys.reduce((acc, key) => {
+//     acc[key] = clockA[key] > clockB[key] ? clockA[key] : clockB[key];
+//     return acc;
+//   }, {});
+//   // Sort keys just for convenience
+//   const unorderedResult = { ...clockA, ...clockB, ...overlap };
+//   const orderedResult = Object.keys(unorderedResult)
+//     .sort()
+//     .reduce((acc, key) => {
+//       acc[key] = unorderedResult[key];
+//       return acc;
+//     }, Object.create(null));
+//   return orderedResult;
+// };
+
+export const createClock = (nodeId, tick) => {
   assert.isOk(isValidNodeId(nodeId), "createClock got invalid nodeId");
-  assert.isOk(
-    Number.isSafeInteger(startTick),
-    "createClock got invalid startTick",
-  );
-  return Object.freeze(
-    Object.assign(Object.create(null), { [nodeId]: startTick }),
-  );
+  assert.isOk(Number.isSafeInteger(tick), "createClock got invalid tick");
+  return { [nodeId]: tick };
 };

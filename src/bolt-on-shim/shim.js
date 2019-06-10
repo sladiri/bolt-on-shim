@@ -5,8 +5,8 @@ import { areValidDeps, happensBefore } from "./clock.js";
 const assert = chai.assert;
 
 export const isCovered = async (local, ecds, eWrite, T) => {
+  assert.isOk(isValidWrite(eWrite), "isCovered got invalid write from ECDS");
   assert.isOk(areValidDeps(T), "isCovered got invalid Set T");
-  console.log("isCovered? T", eWrite, T.length, T);
   for (const dep of eWrite.deps) {
     // already applied a suitable write to local-store
     // or already covered a suitable write to dep.key?
@@ -16,8 +16,9 @@ export const isCovered = async (local, ecds, eWrite, T) => {
       "isCovered got invalid write from local storage",
     );
     if (
-      (lDep && !happensBefore(dep, lDep)) ||
-      !happensBefore(dep, T.find((d) => d.key === dep.key))
+      (lDep && !happensBefore(dep.clock, lDep.clock)) ||
+      (T.find((d) => d.key === dep.key) &&
+        !happensBefore(dep, T.find((d) => d.key === dep.key)))
     ) {
       continue;
     }
@@ -27,7 +28,7 @@ export const isCovered = async (local, ecds, eWrite, T) => {
       !eDep || isValidWrite(eDep),
       "isCovered got invalid write from ECDS",
     );
-    if (eDep && !happensBefore(dep, eDep)) {
+    if (eDep && !happensBefore(dep.clock, eDep.clock)) {
       T.push(eDep);
       if (await isCovered(local, ecds, eDep, T)) {
         continue;
@@ -64,14 +65,13 @@ export const get = async (local, ecds, key) => {
   return;
 };
 
-export const set = async (nodeId, local, ecds, key, value, deps = []) => {
-  // TODO: Should caller pass writes instead?
+export const set = async (nodeId, local, ecds, key, value, depkeys, tick) => {
   const depWrites = [];
-  for (const key of deps) {
-    const stored = await local.get(key);
+  for (const depKey of depkeys) {
+    const stored = await local.get(depKey);
     depWrites.push(stored);
   }
-  const write = createWrite(nodeId, key, value, depWrites);
-  ecds.set(key, write);
-  local.set(key, write);
+  const write = createWrite(nodeId, key, value, depWrites, tick);
+  await ecds.set(key, write);
+  await local.set(key, write);
 };

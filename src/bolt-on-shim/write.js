@@ -13,11 +13,8 @@ export const isValidWrite = (item, keyMayBeNull = false) => {
   );
 };
 
-export const createWrite = (nodeId, key = null, value, deps) => {
-  const clock = createClock(
-    nodeId,
-    0 /* TODO: remove, 0 is just easier to read while developing */,
-  );
+export const createWrite = (nodeId, key = null, value, deps, tick) => {
+  const clock = createClock(nodeId, tick);
   return {
     key,
     value,
