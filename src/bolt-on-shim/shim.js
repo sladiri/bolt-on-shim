@@ -66,10 +66,11 @@ export const get = async (local, ecds, key) => {
 
 export const set = async (nodeId, local, ecds, key, value, deps = []) => {
   // TODO: Should caller pass writes instead?
-  const depWrites = deps.map((key) => {
-    const write = local.get(key);
-    return write;
-  });
+  const depWrites = [];
+  for (const key of deps) {
+    const stored = await local.get(key);
+    depWrites.push(stored);
+  }
   const write = createWrite(nodeId, key, value, depWrites);
   ecds.set(key, write);
   local.set(key, write);
