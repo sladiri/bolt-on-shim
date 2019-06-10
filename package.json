@@ -1,7 +1,7 @@
 {
   "name": "bolt-on",
   "version": "0.0.1",
-  "description": "",
+  "description": "Wrapper which adds causal consistency to eventually consistent key-value-data-store",
   "repository": {
     "type": "git",
     "url": "https://github.com/sladiri/bolt-on-shim.git"
