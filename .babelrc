@@ -1,0 +1,16 @@
+{
+  "presets": [
+    [
+      "@babel/env",
+      {
+        "debug": true,
+        "targets": {
+          "browsers": ["chrome >= 67", "firefox >= 67"],
+          "node": "10.16.0"
+        },
+        "corejs": "3",
+        "useBuiltIns": "usage"
+      }
+    ]
+  ]
+}
