@@ -19,12 +19,6 @@ export const areValidDeps = (deps) => {
   );
 };
 
-export const createClock = (nodeId, deps) => {
-  assert.isOk(isValidNodeId(nodeId), "createClock got invalid nodeId");
-  assert.isOk(areValidDeps(deps), "createClock got invalid deps");
-  return { [nodeId]: 0 };
-};
-
 export const isValidClockEntry = (entry) => {
   return (
     entry !== null &&
@@ -55,5 +49,23 @@ export const happensBefore = (writeRef, write) => {
 export const incrementClock = (nodeId, clock) => {
   assert.isOk(isValidNodeId(nodeId), "incrementClock got invalid nodeId");
   assert.isOk(isValidClock(clock), "incrementClock got invalid clock");
-  return { ...clock, [nodeId]: clock[nodeId] + 1 };
+  const nextTick = clock[nodeId] + 1;
+  assert.isOk(
+    Number.isSafeInteger(nextTick),
+    "incrementClock wraps around tick",
+  );
+  return Object.freeze(
+    Object.assign(Object.create(null), clock, { [nodeId]: nextTick }),
+  );
+};
+
+export const createClock = (nodeId, startTick = Number.MAX_SAFE_INTEGER) => {
+  assert.isOk(isValidNodeId(nodeId), "createClock got invalid nodeId");
+  assert.isOk(
+    Number.isSafeInteger(startTick),
+    "createClock got invalid startTick",
+  );
+  return Object.freeze(
+    Object.assign(Object.create(null), { [nodeId]: startTick }),
+  );
 };
