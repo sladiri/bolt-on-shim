@@ -11,7 +11,8 @@
   },
   "main": "./src/index.js",
   "scripts": {
-    "test": "node --experimental-modules ./src/bolt-on-shim/clock.spec.js",
+    "test:clock": "node --experimental-modules ./src/bolt-on-shim/clock.spec.js",
+    "test:shim": "node --experimental-modules ./src/bolt-on-shim/index.spec.js",
     "start": "node --experimental-modules ./src/index.js",
     "lint": "eslint ./src/**/*.js",
     "babel:test": "babel ./src/index.js"

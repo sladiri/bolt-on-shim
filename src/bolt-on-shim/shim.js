@@ -1,6 +1,6 @@
 import chai from "chai";
 import { createWrite, isValidWrite } from "./write.js";
-import { areValidDeps, happensBefore } from "./clock.js";
+import { areValidDeps, happensBefore, mergeClocks } from "./clock.js";
 
 const assert = chai.assert;
 
@@ -34,10 +34,8 @@ export const isCovered = async (local, ecds, eWrite, T) => {
         continue;
       }
     }
-    console.log("isCovered=false");
     return false;
   }
-  console.log("isCovered=true");
   return true;
 };
 
@@ -71,7 +69,17 @@ export const set = async (nodeId, local, ecds, key, value, depkeys, tick) => {
     const stored = await local.get(depKey);
     depWrites.push(stored);
   }
-  const write = createWrite(nodeId, key, value, depWrites, tick);
-  await ecds.set(key, write);
-  await local.set(key, write);
+  let write = createWrite(nodeId, key, value, depWrites, tick);
+  const lWrite = await local.get(key);
+  if (lWrite) {
+    write = {
+      ...write,
+      clock: mergeClocks(write.clock, lWrite.clock),
+      // TODO: merge dependencies too?
+    };
+  }
+  return {
+    localOk: await local.set(key, write),
+    ecdsOk: await ecds.set(key, write),
+  };
 };

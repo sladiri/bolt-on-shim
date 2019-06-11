@@ -100,24 +100,24 @@ export const incrementClock = (nodeId, clock) => {
   return { ...clock, [nodeId]: nextTick };
 };
 
-// export const mergeClocks = (clockA, clockB) => {
-//   const overlappingKeys = Object.keys(clockA).filter((key) =>
-//     Object.keys(clockB).includes(key),
-//   );
-//   const overlap = overlappingKeys.reduce((acc, key) => {
-//     acc[key] = clockA[key] > clockB[key] ? clockA[key] : clockB[key];
-//     return acc;
-//   }, {});
-//   // Sort keys just for convenience
-//   const unorderedResult = { ...clockA, ...clockB, ...overlap };
-//   const orderedResult = Object.keys(unorderedResult)
-//     .sort()
-//     .reduce((acc, key) => {
-//       acc[key] = unorderedResult[key];
-//       return acc;
-//     }, Object.create(null));
-//   return orderedResult;
-// };
+export const mergeClocks = (clockA, clockB) => {
+  const overlappingKeys = Object.keys(clockA).filter((key) =>
+    Object.keys(clockB).includes(key),
+  );
+  const overlap = overlappingKeys.reduce((acc, key) => {
+    acc[key] = clockA[key] > clockB[key] ? clockA[key] : clockB[key];
+    return acc;
+  }, {});
+  // Sort keys just for convenience
+  const unorderedResult = { ...clockA, ...clockB, ...overlap };
+  const orderedResult = Object.keys(unorderedResult)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = unorderedResult[key];
+      return acc;
+    }, Object.create(null));
+  return orderedResult;
+};
 
 export const createClock = (nodeId, tick) => {
   assert.isOk(isValidNodeId(nodeId), "createClock got invalid nodeId");

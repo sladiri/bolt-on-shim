@@ -24,8 +24,12 @@ export default (
       },
       set: async (key, value, deps = []) => {
         try {
-          await set(nodeId, local, ecds, key, value, deps, tick);
-          tick += 1;
+          const ok = await set(nodeId, local, ecds, key, value, deps, tick);
+          if (ok.localOk === true && ok.ecdsOk === true) {
+            tick += 1;
+          } else {
+            console.error("shim.set got error:", ok);
+          }
         } catch (error) {
           console.error(error);
         }

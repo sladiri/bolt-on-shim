@@ -8,16 +8,25 @@ export const keyIsValid = (key) => {
 
 export const get = async (storage, key) => {
   assert.isOk(keyIsValid(key), "store.get: invalid key");
-
   const stored = storage.get(key);
   if (typeof stored !== "string") {
     return stored;
   }
-  return JSON.parse(stored);
+  try {
+    return JSON.parse(stored);
+  } catch (error) {
+    console.error(error);
+    return;
+  }
 };
 
 export const set = async (storage, key, value) => {
-  assert.isOk(keyIsValid(key), "store.set: invalid key");
-
-  storage.set(key, JSON.stringify(value));
+  try {
+    assert.isOk(keyIsValid(key), "store.set: invalid key");
+    storage.set(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 };
