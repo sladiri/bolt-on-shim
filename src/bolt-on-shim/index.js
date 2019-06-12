@@ -20,6 +20,7 @@ export default (
           return await get(local, ecds, key);
         } catch (error) {
           console.error(error);
+          return;
         }
       },
       set: async (key, value, deps = []) => {
