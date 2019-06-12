@@ -21,12 +21,14 @@ export const get = async (storage, key) => {
 };
 
 export const set = async (storage, key, value) => {
+  assert.isOk(keyIsValid(key), "store.set: invalid key");
+  let toStore;
   try {
-    assert.isOk(keyIsValid(key), "store.set: invalid key");
-    storage.set(key, JSON.stringify(value));
-    return true;
+    toStore = JSON.stringify(value);
   } catch (error) {
     console.error(error);
     return false;
   }
+  storage.set(key, toStore);
+  return true;
 };
