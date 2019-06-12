@@ -1,5 +1,5 @@
 import chai from "chai";
-import { isValidWrite } from "./write.js";
+import { isValidWrite } from "./write.js"; // TODO: remove, do not store complete write?
 
 const assert = chai.assert;
 
